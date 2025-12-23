@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的日程</title>
+    <style>
+        body { width: 800px; margin: 20px auto; }
+        .header { text-align: right; margin-bottom: 20px; }
+        .add-form { margin: 20px 0; }
+        input { padding: 5px; width: 300px; }
+        button { padding: 5px 10px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span id="username">欢迎您！</span>
+        <a href="user/logout">退出登录</a>
+    </div>
+    <h2>我的日程</h2>
+    <div class="add-form">
+        <input type="text" id="title" placeholder="请输入日程标题">
+        <button onclick="addSchedule()">新增</button>
+    </div>
+    <table>
+        <thead>
+            <tr><th>序号</th><th>日程标题</th><th>完成状态</th><th>操作</th></tr>
+        </thead>
+        <tbody id="scheduleList"></tbody>
+    </table>
+    <script>
+        window.onload = function() { loadScheduleList(); }
+        function loadScheduleList() {
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "schedule/list");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let list = JSON.parse(xhr.responseText);
+                    let html = "";
+                    for (let i = 0; i < list.length; i++) {
+                        let s = list[i];
+                        let status = s.completed === 1 ? "✅ 已完成" : "❌ 未完成";
+                        let btnText = s.completed === 1 ? "标记未完成" : "标记已完成";
+                        html += `<tr>
+                            <td>${i+1}</td>
+                            <td>${s.title}</td>
+                            <td>${status}</td>
+                            <td>
+                                <button onclick="updateSchedule(${s.sid}, ${1 - s.completed})">${btnText}</button>
+                                <button onclick="deleteSchedule(${s.sid})">删除</button>
+                            </td>
+                        </tr>`;
+                    }
+                    document.getElementById("scheduleList").innerHTML = html;
+                }
+            }
+            xhr.send();
+        }
+        function addSchedule() {
+            let title = document.getElementById("title").value;
+            if (!title) { alert("标题不能为空！"); return; }
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "schedule/add");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) { document.getElementById("title").value = ""; loadScheduleList(); } }
+            xhr.send("title=" + encodeURIComponent(title));
+        }
+        function updateSchedule(sid, completed) {
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "schedule/update");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) { loadScheduleList(); } }
+            xhr.send("sid=" + sid + "&completed=" + completed);
+        }
+        function deleteSchedule(sid) {
+            if (!confirm("确定删除该日程吗？")) return;
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "schedule/delete");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) { loadScheduleList(); } }
+            xhr.send("sid=" + sid);
+        }
+    </script>
+</body>
+</html>

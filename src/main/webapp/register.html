@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户注册</title>
+    <style>
+        body { text-align: center; margin-top: 100px; }
+        .form-item { margin: 10px 0; }
+        input { padding: 5px; width: 200px; }
+        button { padding: 5px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>日程管理系统 - 注册</h1>
+    <form action="user/register" method="post" onsubmit="return checkForm()">
+        <div class="form-item">用户名：<input type="text" name="username" id="username" required></div>
+        <div class="form-item">密码：<input type="password" name="password" id="password" required></div>
+        <div class="form-item">确认密码：<input type="password" name="repassword" id="repassword" required></div>
+        <div class="form-item">
+            <button type="submit">注册</button>
+            <button type="reset">重置</button>
+        </div>
+    </form>
+    <div>已有账号？<a href="login.html">立即登录</a></div>
+    <script>
+        function checkForm() {
+            let pwd = document.getElementById("password").value;
+            let repwd = document.getElementById("repassword").value;
+            if (pwd !== repwd) { alert("两次密码不一致！"); return false; }
+            if (pwd.length < 6) { alert("密码长度不能少于6位！"); return false; }
+            return true;
+        }
+    </script>
+</body>
+</html>
